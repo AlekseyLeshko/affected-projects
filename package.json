@@ -1,0 +1,16 @@
+{
+  "name": "affected-projects",
+  "version": "0.0.0",
+  "description": "Get affected projects in a monorepo by git",
+  "main": "dist/index.js",
+  "repository": "git@github.com:AlekseyLeshko/affected-projects.git",
+  "author": "AlekseyLeshko <alekseyleshko@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn tsc",
+    "type-check": "yarn tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^4.6.2"
+  }
+}
