@@ -9,9 +9,16 @@
   "scripts": {
     "build": "yarn tsc",
     "static-checks": "yarn type-check",
+    "tdd": "jest --watch",
+    "test": "jest",
     "type-check": "yarn tsc --noEmit"
   },
   "devDependencies": {
+    "@babel/core": "^7.17.5",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-typescript": "^7.16.7",
+    "babel-jest": "^27.5.1",
+    "jest": "^27.5.1",
     "typescript": "^4.6.2"
   }
 }
