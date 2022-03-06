@@ -1,1 +1,1 @@
-console.log('affected-projects');
+export { getAffectedProjects } from './get-affected-projects';
