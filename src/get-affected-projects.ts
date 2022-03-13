@@ -118,8 +118,15 @@ const formatForRename = (path: Change['path']) => {
     return path;
   }
 
-  const match = path.match(/(.*){.*\s=>\s(.*)}/);
-  return `${match[1]}${match[2]}`;
+  type Match = string[] & {
+    groups?: Record<string, string>,
+    index?: number,
+  } | null;
+  const match: Match = path.match(/(?<path>.*){(?<oldName>.*)\s=>\s(?<newName>.*)}/);
+  if (!match || match.index === undefined || !match?.groups || match?.index < 0 || Object.keys(match?.groups).length !== 3) {
+    return path;
+  }
+  return `${match.groups.path}${match.groups.newName.trim()}`;
 };
 
 const format = (change: Change) => ({

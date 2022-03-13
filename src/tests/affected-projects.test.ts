@@ -174,7 +174,6 @@ describe('affected project', () => {
     },
   );
 
-  // rename
   it.each([
     [
       'return library-b workspace when library-a was renamed to library-b',
