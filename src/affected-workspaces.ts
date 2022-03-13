@@ -3,7 +3,24 @@ import { execSync } from 'child_process';
 import minimatch from 'minimatch';
 import { getYarnWorkspacesInfo, YarnWorkspacesInfo, isWorkspaceExist } from './yarn-workspaces';
 
-export const getProjectsByDirectory = (source: string): string[] =>
+export const getAffectedWorkspaces = (workspaces: string[], defaultWorkspaces: string[], filterPattern: string = '**') => {
+  const affectedProjectsFromDirectories = getAffectedFromDirectories(workspaces);
+
+  const defaultWorkspaceList = (defaultWorkspaces || workspaces).reduce(
+    (acc: string[], directory: string) => [...acc, ...getProjectsByDirectory(directory)],
+    [],
+  );
+
+  const affectedProjects = affectedProjectsFromDirectories.length
+    ? affectedProjectsFromDirectories
+    : defaultWorkspaceList;
+
+  const filter = makeFilter(filterPattern);
+  const filteredAffectedProjects = affectedProjects.filter(filter);
+  return pack(filteredAffectedProjects);
+};
+
+const getProjectsByDirectory = (source: string): string[] =>
   readdirSync(source, { withFileTypes: true })
     .filter((dirent) => dirent.isDirectory())
     .map((dirent) => `${source}/${dirent.name}`);
@@ -65,7 +82,7 @@ const getProjectName = (projectName: string) => {
   return undefined;
 };
 
-export const pack = (affectedProjects: string[]) => {
+const pack = (affectedProjects: string[]) => {
   const apps = affectedProjects
     .filter(isApp)
     .map(getProjectName)
@@ -155,16 +172,3 @@ const getAffectedFromDirectories = (directories: string[]) => {
 };
 
 const makeFilter = (pattern: string) => (projectName: string) => minimatch(projectName, pattern);
-
-export const getAffectedProjects = (directories: string[], defaultProjects: string[], filterPattern: string = '**') => {
-
-  const affectedProjectsFromDirectories = getAffectedFromDirectories(directories);
-
-  const affectedProjects = affectedProjectsFromDirectories.length
-    ? affectedProjectsFromDirectories
-    : defaultProjects;
-
-  const filter = makeFilter(filterPattern);
-  const filteredAffectedProjects = affectedProjects.filter(filter);
-  return pack(filteredAffectedProjects);
-};

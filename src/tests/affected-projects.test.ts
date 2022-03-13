@@ -1,6 +1,6 @@
 import { execSync } from 'child_process';
 import fs from 'fs';
-import { getAffectedProjects } from '../index';
+import { getAffectedWorkspaces } from '../index';
 import { Change } from '../affected-projects.test.ts';
 import { YarnWorkspacesInfo } from '../yarn-workspaces';
 
@@ -157,6 +157,7 @@ describe('affected project', () => {
   ])(
     'should return affected projects',
     ({ directories, defaultProjects, changes, yarnDependencies, filterPattern, expected }) => {
+      jest.spyOn(fs, 'readdirSync').mockReturnValueOnce([]);
       jest.spyOn(fs, 'readFileSync').mockImplementation(mockReadFileSync);
 
       const gitDiffOutput = generateGitDiffOutput(changes);
@@ -165,7 +166,7 @@ describe('affected project', () => {
         .mockImplementationOnce(() => gitDiffOutput)
         .mockImplementationOnce(() => JSON.stringify(yarnWorkspaceInfo));
 
-      const actual = getAffectedProjects(directories, defaultProjects, filterPattern);
+      const actual = getAffectedWorkspaces(directories, defaultProjects, filterPattern);
 
       // Asserts
       expect(execSync).toHaveBeenCalledTimes(2);
@@ -310,6 +311,7 @@ describe('affected project', () => {
     yarnDependencies,
     expected,
   }) => {
+    jest.spyOn(fs, 'readdirSync').mockReturnValueOnce([]);
     jest.spyOn(fs, 'readFileSync').mockImplementation(mockReadFileSync);
 
     const gitDiffOutput = generateGitDiffOutput(changes);
@@ -318,7 +320,7 @@ describe('affected project', () => {
       .mockImplementationOnce(() => gitDiffOutput)
       .mockImplementationOnce(() => JSON.stringify(yarnWorkspaceInfo));
 
-    const actual = getAffectedProjects(directories, []);
+    const actual = getAffectedWorkspaces(directories, []);
 
     // Asserts
     expect(execSync).toHaveBeenCalledTimes(2);
@@ -364,6 +366,7 @@ describe('affected project', () => {
     yarnDependencies,
     expected,
   }) => {
+    jest.spyOn(fs, 'readdirSync').mockReturnValueOnce([]);
     jest.spyOn(fs, 'readFileSync').mockImplementation(mockReadFileSync);
 
     const gitDiffOutput = generateGitDiffOutput(changes);
@@ -372,7 +375,7 @@ describe('affected project', () => {
       .mockImplementationOnce(() => gitDiffOutput)
       .mockImplementationOnce(() => JSON.stringify(yarnWorkspaceInfo));
 
-    const actual = getAffectedProjects(directories, []);
+    const actual = getAffectedWorkspaces(directories, []);
 
     // Asserts
     expect(execSync).toHaveBeenCalledTimes(2);
