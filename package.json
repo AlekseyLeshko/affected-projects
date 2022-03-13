@@ -15,6 +15,7 @@
     "static-checks": "yarn type-check",
     "tdd": "jest --watch",
     "test": "jest",
+    "test:ci": "yarn test --ci",
     "type-check": "yarn tsc --noEmit"
   },
   "devDependencies": {
