@@ -173,6 +173,213 @@ describe('affected project', () => {
       expect(actual).toEqual(expected);
     },
   );
+
+  // rename
+  it.each([
+    [
+      'return library-b workspace when library-a was renamed to library-b',
+      {
+        directories: ['library', 'app'],
+        changes: [
+          {
+            insertions: 0,
+            deletions: 0,
+            path: 'library/{library-a => library-b}/package.json',
+          },
+        ],
+        yarnDependencies: {
+          '@org/library-b': {
+            location: 'library/library-b',
+            workspaceDependencies: [],
+            mismatchedWorkspaceDependencies: [],
+          },
+        },
+        expected: [
+          {
+            name: '@org/library-b',
+            projects: ['@org/library-b'],
+          },
+        ],
+      },
+    ],
+    [
+      'return library-b workspace when library-a was renamed to library-b and add one new file',
+      {
+        directories: ['library', 'app'],
+        changes: [
+          {
+            insertions: 0,
+            deletions: 0,
+            path: 'library/{library-a => library-b}/package.json',
+          },
+          {
+            insertions: 10,
+            deletions: 0,
+            path: 'library/library-b/file.js',
+          },
+        ],
+        yarnDependencies: {
+          '@org/library-a': {
+            location: 'library/library-a',
+            workspaceDependencies: [],
+            mismatchedWorkspaceDependencies: [],
+          },
+          '@org/library-b': {
+            location: 'library/library-b',
+            workspaceDependencies: [],
+            mismatchedWorkspaceDependencies: [],
+          },
+        },
+        expected: [
+          {
+            name: '@org/library-b',
+            projects: ['@org/library-b'],
+          },
+        ],
+      },
+    ],
+    [
+      'return library-a workspace when library-a and library-b were touched',
+      {
+        directories: ['library', 'app'],
+        changes: [
+          {
+            insertions: 10,
+            deletions: 0,
+            path: 'library/library-a/file.js',
+          },
+          {
+            insertions: 0,
+            deletions: 10,
+            path: 'library/library-b/package.json',
+          },
+        ],
+        yarnDependencies: {
+          '@org/library-a': {
+            location: 'library/library-a',
+            workspaceDependencies: [],
+            mismatchedWorkspaceDependencies: [],
+          },
+          '@org/library-b': {
+            location: 'library/library-b',
+            workspaceDependencies: [],
+            mismatchedWorkspaceDependencies: [],
+          },
+        },
+        expected: [
+          {
+            name: 'Project pack: 0',
+            projects: ['@org/library-a', '@org/library-b'],
+          },
+        ],
+      },
+    ],
+    [
+      'return library-a workspace when a binary file was renamed from library-a',
+      {
+        directories: ['library', 'app'],
+        changes: [
+          {
+            insertions: '-',
+            deletions: '-',
+            path: 'library/library-b/icon.png',
+          },
+        ],
+        yarnDependencies: {
+          '@org/library-a': {
+            location: 'library/library-a',
+            workspaceDependencies: [],
+            mismatchedWorkspaceDependencies: [],
+          },
+          '@org/library-b': {
+            location: 'library/library-b',
+            workspaceDependencies: [],
+            mismatchedWorkspaceDependencies: [],
+          },
+        },
+        expected: [
+          {
+            name: '@org/library-b',
+            projects: ['@org/library-b'],
+          },
+        ],
+      },
+    ],
+  ])('should %s', (_, {
+    directories,
+    changes,
+    yarnDependencies,
+    expected,
+  }) => {
+    jest.spyOn(fs, 'readFileSync').mockImplementation(mockReadFileSync);
+
+    const gitDiffOutput = generateGitDiffOutput(changes);
+    const yarnWorkspaceInfo = makeYarnWorkspacesLog(yarnDependencies);
+    (execSync as jest.Mock)
+      .mockImplementationOnce(() => gitDiffOutput)
+      .mockImplementationOnce(() => JSON.stringify(yarnWorkspaceInfo));
+
+    const actual = getAffectedProjects(directories, []);
+
+    // Asserts
+    expect(execSync).toHaveBeenCalledTimes(2);
+
+    expect(actual).toEqual(expected);
+  });
+
+  it.each([
+    [
+      'return library-a workspace when library-a was touched and library-b was deleted',
+      {
+        directories: ['library', 'app'],
+        changes: [
+          {
+            insertions: 10,
+            deletions: 0,
+            path: 'library/library-a/file.js',
+          },
+          {
+            insertions: 0,
+            deletions: 10,
+            path: 'library/library-b/package.json',
+          },
+        ],
+        yarnDependencies: {
+          '@org/library-a': {
+            location: 'library/library-a',
+            workspaceDependencies: [],
+            mismatchedWorkspaceDependencies: [],
+          },
+        },
+        expected: [
+          {
+            name: '@org/library-a',
+            projects: ['@org/library-a'],
+          },
+        ],
+      },
+    ],
+  ])('should %s', (_, {
+    directories,
+    changes,
+    yarnDependencies,
+    expected,
+  }) => {
+    jest.spyOn(fs, 'readFileSync').mockImplementation(mockReadFileSync);
+
+    const gitDiffOutput = generateGitDiffOutput(changes);
+    const yarnWorkspaceInfo = makeYarnWorkspacesLog(yarnDependencies);
+    (execSync as jest.Mock)
+      .mockImplementationOnce(() => gitDiffOutput)
+      .mockImplementationOnce(() => JSON.stringify(yarnWorkspaceInfo));
+
+    const actual = getAffectedProjects(directories, []);
+
+    // Asserts
+    expect(execSync).toHaveBeenCalledTimes(2);
+
+    expect(actual).toEqual(expected);
+  });
 });
 
 const generateGitDiffOutput = (changes: Change[] = []) =>

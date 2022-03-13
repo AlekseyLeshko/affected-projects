@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'fs';
 import { execSync } from 'child_process';
 import minimatch from 'minimatch';
-import { getYarnWorkspacesInfo, YarnWorkspacesInfo } from './yarn-workspaces';
+import { getYarnWorkspacesInfo, YarnWorkspacesInfo, isWorkspaceExist } from './yarn-workspaces';
 
 export const getProjectsByDirectory = (source: string): string[] =>
   readdirSync(source, { withFileTypes: true })
@@ -26,8 +26,6 @@ const parseGitOutput = (gitOutput: string): Change[] =>
     .map(([_, __, path]) => ({
       path,
     }));
-
-const isRename = (change: Change) => change.path.includes('=>');
 
 const getLocation = (change: Change) => {
   const [dir, project] = change.path.split('/');
@@ -114,6 +112,21 @@ const getAffectedDependencyGraph = (
 const getLocationByProjectName = (projectName: string, workspacesInfo: YarnWorkspacesInfo) =>
   workspacesInfo[projectName].location;
 
+const isRename = (path: Change['path']) => path.includes('=>');
+const formatForRename = (path: Change['path']) => {
+  if (!isRename(path)) {
+    return path;
+  }
+
+  const match = path.match(/(.*){.*\s=>\s(.*)}/);
+  return `${match[1]}${match[2]}`;
+};
+
+const format = (change: Change) => ({
+  ...change,
+  path: formatForRename(change.path),
+});
+
 const getAffectedFromDirectories = (directories: string[]) => {
   const patterns = directories.map(dir => `${dir}/**/*`);
 
@@ -121,7 +134,7 @@ const getAffectedFromDirectories = (directories: string[]) => {
   const workspacesInfo = getYarnWorkspacesInfo();
 
   return changes
-    .filter(change => !isRename(change))
+    .map(format)
     .filter(change => patterns.some(pattern => minimatch(change.path, pattern)))
     .map(getLocation)
     .map(getProjectName)
@@ -129,6 +142,7 @@ const getAffectedFromDirectories = (directories: string[]) => {
       (acc, projectName) => [...acc, ...getAffectedDependencyGraph(workspacesInfo, projectName)],
       [],
     )
+    .filter((projectName: string) => isWorkspaceExist(workspacesInfo, projectName))
     .map((projectName: string) => getLocationByProjectName(projectName, workspacesInfo))
     .filter(unique);
 };
