@@ -14,3 +14,5 @@ export const getYarnWorkspacesInfo = () => {
   const output = JSON.parse(yarnWorkspaceInfo);
   return JSON.parse(output.data);
 };
+
+export const isWorkspaceExist = (workspacesInfo: YarnWorkspacesInfo, projectName: string) => Boolean(workspacesInfo[projectName]?.location);
