@@ -1,2 +1,2 @@
-# affected-projects
-Get affected projects in a monorepo by git
+# affected-workspaces
+Get affected workspaces in a monorepo by git

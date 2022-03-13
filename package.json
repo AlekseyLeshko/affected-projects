@@ -1,7 +1,7 @@
 {
-  "name": "affected-projects",
+  "name": "affected-workspaces",
   "version": "0.1.0",
-  "description": "Get affected projects in a monorepo by git",
+  "description": "Get affected workspaces in a monorepo by git",
   "main": "dist/index.js",
   "repository": "git@github.com:AlekseyLeshko/affected-projects.git",
   "author": "AlekseyLeshko <alekseyleshko@gmail.com>",
